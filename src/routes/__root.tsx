@@ -100,7 +100,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ab8ad565-8ab7-4193-b250-407bedcffc95/id-preview-48721852--f733a341-96e3-4f1b-8b4c-ff29f15874ac.lovable.app-1783356921641.png" },
     ],
     links: [
-
       {
         rel: "preconnect",
         href: "https://fonts.googleapis.com",
@@ -118,11 +117,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      // {
-      //   rel: "manifest",
-      //   href: "/site.webmanifest",
-      // },
-      {  rel: "icon", href: "/favicon.png", type: "image/png" },
+      {
+        rel: "icon",
+        href: "/favicon.png",
+        type: "image/png",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/icon-192.png",
+      },
+      {
+        rel: "manifest",
+        href: "/site.webmanifest",
+      },
     ],
   }),
   shellComponent: RootShell,
