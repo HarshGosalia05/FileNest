@@ -118,10 +118,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      {
-        rel: "manifest",
-        href: "/site.webmanifest",
-      },
+      // {
+      //   rel: "manifest",
+      //   href: "/site.webmanifest",
+      // },
       {  rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
