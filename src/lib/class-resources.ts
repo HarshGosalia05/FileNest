@@ -64,20 +64,26 @@ export function useDeleteClassResource() {
 
   return useMutation({
     mutationFn: async (file: ClassResourceRow) => {
-      const { error: storageError } = await supabase.storage
-        .from(CLASS_BUCKET)
-        .remove([file.storage_path]);
-      if (storageError) throw storageError;
-
-      const { data, error } = await supabase
+      // Delete the database row first so we don't delete storage if RLS blocks database deletion
+      const { data, error: dbError } = await supabase
         .from("class_resources")
         .delete()
         .eq("id", file.id)
         .select("id");
 
-      if (error) throw error;
+      if (dbError) throw dbError;
       if (!data || data.length === 0) {
-        throw new Error("You do not have permission to delete this file.");
+        throw new Error(
+          "Permission denied by Supabase database: 'class_resources' table requires a DELETE RLS policy."
+        );
+      }
+
+      // Once database row is confirmed deleted, clean up the storage file
+      const { error: storageError } = await supabase.storage
+        .from(CLASS_BUCKET)
+        .remove([file.storage_path]);
+      if (storageError) {
+        console.warn("Storage deletion warning:", storageError);
       }
 
       return data[0].id;
