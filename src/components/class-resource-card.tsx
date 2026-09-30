@@ -28,7 +28,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { extOf, formatDate, formatSize, isPreviewableImage, isPreviewablePdf, kindOf } from "@/lib/files";
+import { extOf, formatDate, formatSize, kindOf } from "@/lib/files";
 import {
   CLASS_BUCKET,
   canDeleteClassResource,
@@ -64,7 +64,6 @@ export function ClassResourceCard({ file }: { file: ClassResourceRow }) {
   const kind = kindOf(file.original_name);
   const Icon = iconMap[kind];
   const ext = extOf(file.original_name) || "file";
-  const canPreview = isPreviewableImage(file.original_name) || isPreviewablePdf(file.original_name);
   const [downloading, setDownloading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -112,17 +111,15 @@ export function ClassResourceCard({ file }: { file: ClassResourceRow }) {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {canPreview && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setPreviewOpen(true)}
-              aria-label="Preview file"
-              className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setPreviewOpen(true)}
+            aria-label={`View ${file.original_name}`}
+            className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"

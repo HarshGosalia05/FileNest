@@ -9,6 +9,7 @@ import {
   File as FileIcon,
   MoreVertical,
   Download,
+  Eye,
   Trash2,
   Loader2,
 } from "lucide-react";
@@ -195,6 +196,10 @@ export function FileCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => setPreviewOpen(true)}>
+                <Eye className="mr-2 h-4 w-4" />
+                View
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDownload} disabled={downloading}>
                 <Download className="mr-2 h-4 w-4" />
                 Download

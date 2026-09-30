@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Download, FileText, Loader2 } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { extOf, formatDate, formatSize, isPreviewableImage, isPreviewablePdf } from "@/lib/files";
+import { formatDate, formatSize, previewKindOf } from "@/lib/files";
+import { FileViewer, UnavailableFallback } from "@/components/file-viewer";
 import { CLASS_BUCKET, type ClassResourceRow } from "@/lib/class-resources";
 
 interface Props {
@@ -19,7 +20,8 @@ export function ClassResourcePreviewDialog({ file, open, onOpenChange }: Props) 
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
 
-  const previewable = !!file && (isPreviewableImage(file.original_name) || isPreviewablePdf(file.original_name));
+  const previewKind = file ? previewKindOf(file.original_name) : "none";
+  const previewable = previewKind !== "none";
 
   useEffect(() => {
     if (!file || !open || !previewable) {
@@ -94,33 +96,14 @@ export function ClassResourcePreviewDialog({ file, open, onOpenChange }: Props) 
               Couldn't load preview: {error}
             </div>
           ) : previewable && url ? (
-            isPreviewableImage(file.original_name) ? (
-              <div className="grid max-h-[70vh] place-items-center overflow-auto p-4">
-                <img
-                  src={url}
-                  alt={file.original_name}
-                  className="max-h-[65vh] w-auto rounded-lg object-contain shadow-[var(--shadow-card)]"
-                />
-              </div>
-            ) : (
-              <iframe
-                title={file.original_name}
-                src={url}
-                className="h-[70vh] w-full border-0 bg-background"
-              />
-            )
+            <FileViewer
+              url={url}
+              name={file.original_name}
+              kind={previewKind}
+              size={Number(file.file_size)}
+            />
           ) : (
-            <div className="flex flex-col items-center gap-4 px-6 py-14 text-center">
-              <div className="grid h-16 w-16 place-items-center rounded-2xl bg-primary/10 text-primary">
-                <FileText className="h-7 w-7" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold">Preview isn't available</h3>
-                <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">.{file && extOf(file.original_name)}</span> files can't be previewed in the browser. You can download it to open on your device.
-                </p>
-              </div>
-            </div>
+            <UnavailableFallback name={file.original_name} />
           )}
         </div>
 

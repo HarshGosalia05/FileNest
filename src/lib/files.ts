@@ -92,6 +92,27 @@ export function isPreviewablePdf(name: string) {
   return extOf(name) === "pdf";
 }
 
+const NOTEBOOK_EXTS = new Set(["ipynb"]);
+const BINARY_DOC_EXTS = new Set(["doc", "docx", "ppt", "pptx", "xls", "xlsx"]);
+
+export type PreviewKind =
+  "image" | "pdf" | "video" | "audio" | "notebook" | "text" | "none";
+
+export function previewKindOf(name: string): PreviewKind {
+  const e = extOf(name);
+  if (IMAGE_EXTS.has(e)) return "image";
+  if (e === "pdf") return "pdf";
+  if (VIDEO_EXTS.has(e)) return "video";
+  if (AUDIO_EXTS.has(e)) return "audio";
+  if (NOTEBOOK_EXTS.has(e)) return "notebook";
+  if (ARCHIVE_EXTS.has(e) || BINARY_DOC_EXTS.has(e)) return "none";
+  return "text";
+}
+
+export function isViewable(name: string) {
+  return previewKindOf(name) !== "none";
+}
+
 export function computeStats(files: FileRow[]) {
   let docs = 0;
   let media = 0;
