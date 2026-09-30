@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
-import { CLASS_BUCKET, classResourcesQueryKey } from "@/lib/class-resources";
+import { CLASS_BUCKET, classResourcesQueryKey, isSignedIn } from "@/lib/class-resources";
 
 const MAX_SIZE = 50 * 1024 * 1024;
 
@@ -42,7 +42,7 @@ export function ClassResourceUpload() {
 
   const uploadOne = useCallback(
     async (file: File) => {
-      if (!user) {
+      if (!isSignedIn(user)) {
         toast.error("Sign in to share class resources.");
         return;
       }

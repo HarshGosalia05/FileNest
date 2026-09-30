@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Inbox, LogIn } from "lucide-react";
 import { ClassResourceCard } from "@/components/class-resource-card";
 import { ClassResourceUpload } from "@/components/class-resource-upload";
-import { useClassResources } from "@/lib/class-resources";
+import { canUploadClassResources, useClassResources } from "@/lib/class-resources";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/class-resources")({
@@ -34,6 +34,7 @@ export const Route = createFileRoute("/class-resources")({
 
 function ClassResourcesPage() {
   const { user, loading } = useAuth();
+  const canUpload = canUploadClassResources(user);
   const { data: files, isLoading } = useClassResources();
   const total = files?.length ?? 0;
 
@@ -74,7 +75,7 @@ function ClassResourcesPage() {
                 </div>
               </section>
 
-              {user && <ClassResourceUpload />}
+              {canUpload && <ClassResourceUpload />}
 
               <section>
                 {isLoading ? (

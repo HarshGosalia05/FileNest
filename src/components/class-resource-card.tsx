@@ -9,15 +9,32 @@ import {
   File as FileIcon,
   Download,
   Eye,
+  Trash2,
   Loader2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { extOf, formatDate, formatSize, isPreviewableImage, isPreviewablePdf, kindOf } from "@/lib/files";
-import { CLASS_BUCKET, type ClassResourceRow } from "@/lib/class-resources";
+import {
+  CLASS_BUCKET,
+  canDeleteClassResource,
+  useDeleteClassResource,
+  type ClassResourceRow,
+} from "@/lib/class-resources";
 import { ClassResourcePreviewDialog } from "@/components/class-resource-preview-dialog";
 
 const iconMap = {
@@ -41,12 +58,16 @@ const toneMap = {
 } as const;
 
 export function ClassResourceCard({ file }: { file: ClassResourceRow }) {
+  const { user } = useAuth();
+  const canDelete = canDeleteClassResource(user, file);
+  const deleteMutation = useDeleteClassResource();
   const kind = kindOf(file.original_name);
   const Icon = iconMap[kind];
   const ext = extOf(file.original_name) || "file";
   const canPreview = isPreviewableImage(file.original_name) || isPreviewablePdf(file.original_name);
   const [downloading, setDownloading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -116,10 +137,58 @@ export function ClassResourceCard({ file }: { file: ClassResourceRow }) {
               <Download className="h-4 w-4" />
             )}
           </Button>
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setConfirmOpen(true)}
+              disabled={deleteMutation.isPending}
+              aria-label={`Delete ${file.original_name}`}
+              className="h-9 w-9 rounded-full text-muted-foreground hover:text-destructive"
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          )}
         </div>
       </Card>
 
       <ClassResourcePreviewDialog file={file} open={previewOpen} onOpenChange={setPreviewOpen} />
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this file?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-medium text-foreground">{file.original_name}</span> will be
+              permanently removed from the public library. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                deleteMutation.mutate(file, { onSuccess: () => setConfirmOpen(false) });
+              }}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
